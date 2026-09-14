@@ -16,7 +16,6 @@ const DEFAULT_KEYS = [
   "site_title",
   "site_description",
   "site_logo",
-  "favicon",
   "whatsapp",
   "currency",
   "store_page_size",
@@ -33,7 +32,6 @@ const THEME_KEYS = [
 export default function SettingsForm({ initial }: Props) {
   const [form, setForm] = useState<Record<string, string>>({
     site_logo: "",
-    favicon: "",
     ...initial,
   });
   const [newKey, setNewKey] = useState("");
@@ -160,7 +158,6 @@ export default function SettingsForm({ initial }: Props) {
         <h2 className="font-semibold text-gray-900">Ajustes generales</h2>
         {otherEntries.map(([key, value]) => {
           const isLogo = key === "site_logo";
-          const isFavicon = key === "favicon";
           return (
             <div key={key}>
               <label className={labelCls}>
@@ -168,11 +165,8 @@ export default function SettingsForm({ initial }: Props) {
                 {isLogo && (
                   <span className="text-gray-400 font-normal"> · logo del sistema</span>
                 )}
-                {isFavicon && (
-                  <span className="text-gray-400 font-normal"> · icono del navegador del sitio</span>
-                )}
               </label>
-              {isLogo || isFavicon ? (
+              {isLogo ? (
                 <ImagePicker value={value} onChange={(url) => setValue(key, url)} />
               ) : (
                 <input
@@ -180,6 +174,11 @@ export default function SettingsForm({ initial }: Props) {
                   value={value}
                   onChange={(e) => setValue(key, e.target.value)}
                 />
+              )}
+              {isLogo && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Recomendado: PNG o SVG · 200×60 px (horizontal) o 512×512 px (cuadrado).
+                </p>
               )}
             </div>
           );

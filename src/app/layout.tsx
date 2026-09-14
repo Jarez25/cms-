@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export async function generateMetadata(): Promise<Metadata> {
   try {
     const [header, settings] = await Promise.all([getHeader(null), getSettings()]);
-    const favicon = header?.favicon || settings.favicon || "";
+    const favicon = header?.favicon || "";
     return {
       title: header?.site_name || settings.site_title || "Mi Sitio",
       description: settings.site_description || "",

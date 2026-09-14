@@ -102,7 +102,8 @@ export default function HeaderForm({ initial, menus }: Props) {
   }
 
   return (
-    <form onSubmit={save} className="space-y-6 max-w-2xl">
+    <form onSubmit={save} className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
       <div className={cardCls}>
         <h2 className="font-semibold text-gray-900">Identidad y marca</h2>
         <div>
@@ -125,10 +126,16 @@ export default function HeaderForm({ initial, menus }: Props) {
           <div>
             <label className={labelCls}>Logo (imagen)</label>
             <ImagePicker value={form.logo_image} onChange={(url) => set("logo_image", url)} />
+            <p className="text-xs text-gray-400 mt-1">
+              Recomendado: PNG o SVG · 200×60 px (horizontal) o 512×512 px (cuadrado).
+            </p>
           </div>
           <div>
             <label className={labelCls}>Favicon (icono del navegador)</label>
             <ImagePicker value={form.favicon} onChange={(url) => set("favicon", url)} />
+            <p className="text-xs text-gray-400 mt-1">
+              Recomendado: PNG, ICO o SVG · 32×32 px o 512×512 px.
+            </p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -199,6 +206,7 @@ export default function HeaderForm({ initial, menus }: Props) {
             onChange={(v) => set("sticky", v ? 1 : 0)}
           />
         </div>
+      </div>
       </div>
 
       <div className={cardCls + " space-y-3"}>

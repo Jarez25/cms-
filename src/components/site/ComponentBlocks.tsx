@@ -3,6 +3,7 @@ import { getProductsPaginated } from "@/lib/data";
 import type { ComponentData, ProductData } from "@/lib/data";
 import ProductCarousel from "./ProductCarousel";
 import ComponentForm from "./ComponentForm";
+import HtmlBlock from "./HtmlBlock";
 
 interface Props {
   components: ComponentData[];
@@ -42,12 +43,60 @@ export default async function ComponentBlocks({
           case "html":
             return (
               <section key={c.id} className="py-10">
-                <div
-                  className="max-w-6xl mx-auto px-4"
-                  dangerouslySetInnerHTML={{ __html: String(p.html ?? "") }}
-                />
+                <div className="max-w-6xl mx-auto px-4">
+                  <HtmlBlock html={String(p.html ?? "")} />
+                </div>
               </section>
             );
+          case "banner": {
+            if (String(p.html ?? "").trim()) {
+              return (
+                <section key={c.id} className="py-6">
+                  <div className="max-w-6xl mx-auto px-4">
+                    <HtmlBlock html={String(p.html ?? "")} />
+                  </div>
+                </section>
+              );
+            }
+            const img = String(p.image ?? "");
+            const title = String(p.title ?? "");
+            const subtitle = String(p.subtitle ?? "");
+            const buttonText = String(p.button_text ?? "");
+            const buttonLink = String(p.button_link ?? "#");
+            return (
+              <section key={c.id} className="py-6">
+                <div className="max-w-6xl mx-auto px-4">
+                  <div className="relative overflow-hidden rounded-3xl bg-gray-950 text-white">
+                    {img && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={img}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover opacity-60"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-r from-gray-950/85 via-gray-950/40 to-transparent" />
+                    <div className="relative px-8 py-14 md:px-14 md:py-20 max-w-2xl">
+                      {title && (
+                        <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+                          {title}
+                        </h2>
+                      )}
+                      {subtitle && <p className="mt-3 text-lg text-gray-300">{subtitle}</p>}
+                      {buttonText && (
+                        <Link
+                          href={buttonLink}
+                          className="mt-6 inline-flex items-center gap-2 rounded-full bg-white text-gray-900 font-semibold px-7 py-3 hover:bg-gray-100 transition-colors"
+                        >
+                          {buttonText}
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </section>
+            );
+          }
           case "cta":
             return (
               <section key={c.id} className="py-14 bg-white">

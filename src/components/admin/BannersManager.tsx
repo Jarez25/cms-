@@ -14,6 +14,7 @@ interface Banner {
   button_text: string;
   button_link: string;
   is_active: number;
+  is_hidden: number;
   sort_order: number;
 }
 
@@ -38,6 +39,7 @@ const empty = (): Omit<Banner, "id"> => ({
   button_text: "",
   button_link: "",
   is_active: 1,
+  is_hidden: 0,
   sort_order: 0,
 });
 
@@ -160,6 +162,19 @@ export default function BannersManager() {
     const res = await fetch(`/api/banners/${id}`, { method: "DELETE" });
     if (res.ok) {
       notify("Banner eliminado", "success");
+      window.dispatchEvent(new Event("cms:reload-preview"));
+      load();
+    }
+  }
+
+  async function toggleHidden(b: Banner) {
+    const res = await fetch(`/api/banners/${b.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...b, is_hidden: b.is_hidden ? 0 : 1 }),
+    });
+    if (res.ok) {
+      notify(b.is_hidden ? "Banner visible" : "Banner oculto", "success");
       window.dispatchEvent(new Event("cms:reload-preview"));
       load();
     }
@@ -351,6 +366,23 @@ export default function BannersManager() {
                 </div>
               </div>
 
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={editing.is_hidden === 1}
+                  onChange={(e) =>
+                    setEditing({ ...editing, is_hidden: e.target.checked ? 1 : 0 })
+                  }
+                  className="mt-0.5 w-4 h-4 rounded accent-blue-600"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-gray-700">Ocultar del sitio</span>
+                  <span className="block text-xs text-gray-400">
+                    No se mostrará en la portada aunque esté activo.
+                  </span>
+                </span>
+              </label>
+
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="submit"
@@ -479,11 +511,22 @@ export default function BannersManager() {
               >
                 {b.is_active ? "Activo" : "Inactivo"}
               </span>
+              {b.is_hidden === 1 && (
+                <span className="text-xs font-medium rounded-full px-2.5 py-1 bg-amber-100 text-amber-700">
+                  Oculto
+                </span>
+              )}
               <button
                 onClick={() => startEdit(b)}
                 className="text-sm text-gray-600 hover:text-gray-900 font-medium"
               >
                 Editar
+              </button>
+              <button
+                onClick={() => toggleHidden(b)}
+                className="text-sm text-amber-600 hover:text-amber-800 font-medium"
+              >
+                {b.is_hidden === 1 ? "Mostrar" : "Ocultar"}
               </button>
               <button
                 onClick={() => remove(b.id)}

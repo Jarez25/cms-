@@ -38,12 +38,13 @@ export async function PUT(request: Request, ctx: Ctx) {
   const type = String(body.type ?? "html");
 
   await db.query(
-    "UPDATE cms_components SET name = ?, type = ?, props = ?, is_active = ? WHERE id = ?",
+    "UPDATE cms_components SET name = ?, type = ?, props = ?, is_active = ?, is_hidden = ? WHERE id = ?",
     [
       name,
       type,
       JSON.stringify(body.props ?? {}),
       body.is_active === false || body.is_active === 0 ? 0 : 1,
+      body.is_hidden ? 1 : 0,
       Number(id),
     ]
   );

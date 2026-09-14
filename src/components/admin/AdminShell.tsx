@@ -24,7 +24,8 @@ type IconName =
   | "logout"
   | "menu"
   | "close"
-  | "docs";
+  | "docs"
+  | "media";
 
 const ICON_PATHS: Record<IconName, string> = {
   panel:
@@ -37,6 +38,8 @@ const ICON_PATHS: Record<IconName, string> = {
   footer:
     "M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z",
   code: "M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5",
+  media:
+    "M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5",
   info: "M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z",
   pages: "M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0120.25 6v12A2.25 2.25 0 0118 20.25H6A2.25 2.25 0 013.75 18V6A2.25 2.25 0 016 3.75h1.5m9 0h-9",
   categories:
@@ -114,6 +117,7 @@ const superGroups: NavGroup[] = [
       { href: "/admin/pages", label: "Páginas", icon: "pages" },
       { href: "/admin/components", label: "Componentes", icon: "components" },
       { href: "/admin/code", label: "Código", icon: "code" },
+      { href: "/admin/media", label: "Multimedia", icon: "media" },
       { href: "/admin/docs", label: "Documentación", icon: "docs" },
     ],
   },
@@ -154,6 +158,7 @@ const providerGroups: NavGroup[] = [
       { href: "/admin/pages", label: "Páginas", icon: "pages" },
       { href: "/admin/components", label: "Componentes", icon: "components" },
       { href: "/admin/code", label: "Código", icon: "code" },
+      { href: "/admin/media", label: "Multimedia", icon: "media" },
       { href: "/admin/docs", label: "Documentación", icon: "docs" },
     ],
   },

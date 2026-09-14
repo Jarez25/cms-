@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import ImagePicker from "./ImagePicker";
 import { notify, confirmAction } from "./feedback";
 
 interface ComponentItem {
@@ -10,6 +11,7 @@ interface ComponentItem {
   type: string;
   props: Record<string, unknown>;
   is_active: number;
+  is_hidden: number;
 }
 
 interface Field {
@@ -28,14 +30,20 @@ interface Page {
   is_active: number;
 }
 
-const TYPES: { value: string; label: string }[] = [
-  { value: "cta", label: "Llamado a la acción (CTA)" },
-  { value: "form", label: "Formulario" },
-  { value: "products", label: "Productos (carrusel)" },
-  { value: "html", label: "HTML personalizado" },
+const TYPES: { value: string; label: string; group: "interactive" | "code" }[] = [
+  { value: "banner", label: "Banner (visual)", group: "interactive" },
+  { value: "cta", label: "Llamado a la acción (CTA)", group: "interactive" },
+  { value: "form", label: "Formulario", group: "interactive" },
+  { value: "products", label: "Productos (carrusel)", group: "interactive" },
+  { value: "html", label: "HTML personalizado", group: "code" },
 ];
 
 const TYPE_META: Record<string, { label: string; gradient: string; icon: string }> = {
+  banner: {
+    label: "Banner",
+    gradient: "from-blue-500 to-sky-600",
+    icon: "M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5z",
+  },
   cta: {
     label: "Llamado a la acción",
     gradient: "from-blue-500 to-sky-600",
@@ -93,6 +101,8 @@ const emptyProps = (type: string): Record<string, unknown> => {
       ],
     };
   if (type === "products") return { title: "", category: "", limit: 10 };
+  if (type === "banner")
+    return { title: "", subtitle: "", image: "", button_text: "", button_link: "", html: "" };
   if (type === "cta")
     return { title: "", subtitle: "", button_text: "", button_link: "" };
   return { html: "" };
@@ -100,21 +110,36 @@ const emptyProps = (type: string): Record<string, unknown> => {
 
 const str = (v: unknown): string => (v == null ? "" : String(v));
 
-function summaryOf(c: ComponentItem): string {
-  const p = c.props ?? {};
-  if (c.type === "html") {
-    const text = str(p.html).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-    return text || "Sin contenido";
-  }
-  if (c.type === "products") {
-    const limit = p.limit != null ? ` · ${p.limit} items` : "";
-    return `${str(p.title) || "Productos"}${limit}`;
-  }
-  if (c.type === "form") {
-    const n = Array.isArray(p.fields) ? p.fields.length : 0;
-    return `${str(p.title) || "Formulario"}${n ? ` · ${n} campo(s)` : ""}`;
-  }
-  return str(p.title) || str(p.button_text) || "Sin título";
+function ScaledFrame({
+  src,
+  baseWidth = 1200,
+  height = 760,
+}: {
+  src: string;
+  baseWidth?: number;
+  height?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.3);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setScale(el.clientWidth / baseWidth));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [baseWidth]);
+
+  return (
+    <div ref={ref} className="w-full overflow-hidden bg-white" style={{ height: height * scale }}>
+      <iframe
+        src={src}
+        title="Vista previa del componente"
+        className="pointer-events-none border-0"
+        style={{ width: baseWidth, height, transform: `scale(${scale})`, transformOrigin: "top left" }}
+      />
+    </div>
+  );
 }
 
 const LOCATIONS = [
@@ -139,9 +164,13 @@ export default function ComponentsManager({ categories }: { categories: string[]
     type: string;
     props: Record<string, unknown>;
     is_active: number;
+    is_hidden: number;
   } | null>(null);
   const [viewingSubs, setViewingSubs] = useState<ComponentItem | null>(null);
   const [subs, setSubs] = useState<{ id: number; data: Record<string, unknown>; created_at: string }[]>([]);
+  const [mediaOpen, setMediaOpen] = useState(false);
+  const [mediaItems, setMediaItems] = useState<{ name: string; url: string }[]>([]);
+  const [bannerMode, setBannerMode] = useState<"form" | "code">("form");
 
   const selectedPageId = pageIdOf(location);
   const selectedPage = selectedPageId != null ? pages.find((p) => p.id === selectedPageId) : undefined;
@@ -273,6 +302,18 @@ export default function ComponentsManager({ categories }: { categories: string[]
     }
   }
 
+  async function toggleHidden(c: ComponentItem) {
+    const res = await fetch(`/api/components/${c.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...c, is_hidden: c.is_hidden ? 0 : 1 }),
+    });
+    if (res.ok) {
+      load();
+      window.dispatchEvent(new Event("cms:reload-preview"));
+    }
+  }
+
   async function viewSubmissions(c: ComponentItem) {
     setViewingSubs(c);
     const res = await fetch(`/api/components/${c.id}/submissions`);
@@ -292,17 +333,36 @@ export default function ComponentsManager({ categories }: { categories: string[]
     });
   }
 
+  async function toggleMedia() {
+    setMediaOpen((o) => !o);
+    if (!mediaOpen) {
+      const res = await fetch("/api/media");
+      if (res.ok) setMediaItems(await res.json());
+    }
+  }
+
+  function insertImage(url: string) {
+    setEditing((e) => {
+      if (!e) return e;
+      const current = str(e.props.html);
+      return {
+        ...e,
+        props: { ...e.props, html: `${current}${current ? "\n" : ""}<img src="${url}" alt="">` },
+      };
+    });
+  }
+
   const inLoc = components.filter((c) => currentIds.includes(c.id));
 
   if (loading) return <p className="text-gray-500">Cargando...</p>;
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-500">{components.length} componente(s)</p>
         <button
           onClick={() =>
-            setEditing({ id: 0, name: "", type: "cta", props: emptyProps("cta"), is_active: 1 })
+            setEditing({ id: 0, name: "", type: "banner", props: emptyProps("banner"), is_active: 1, is_hidden: 0 })
           }
           className="bg-gradient-to-r from-blue-600 to-sky-600 text-white rounded-xl px-4 py-2 text-sm font-medium hover:from-blue-500 hover:to-sky-500 transition"
         >
@@ -364,21 +424,6 @@ export default function ComponentsManager({ categories }: { categories: string[]
             })}
           </div>
         )}
-        {components.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-1">
-            {components
-              .filter((c) => !currentIds.includes(c.id))
-              .map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => toggleLoc(c)}
-                  className="text-sm bg-gray-100 hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-lg px-3 py-1.5 transition"
-                >
-                  + {c.name}
-                </button>
-              ))}
-          </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -389,22 +434,29 @@ export default function ComponentsManager({ categories }: { categories: string[]
               key={c.id}
               className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg hover:border-blue-200 hover:-translate-y-0.5 transition-all flex flex-col overflow-hidden"
             >
-              <div className="p-5 flex-1">
+              <div className="p-5">
                 <div className="flex items-start justify-between gap-3">
                   <span
                     className={`w-11 h-11 rounded-xl bg-gradient-to-br ${meta.gradient} text-white flex items-center justify-center shadow-md`}
                   >
                     <TypeIcon type={c.type} className="w-6 h-6" />
                   </span>
-                  <span
-                    className={`shrink-0 text-xs font-medium rounded-full px-2.5 py-1 ${
-                      c.is_active
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-gray-100 text-gray-500"
-                    }`}
-                  >
-                    {c.is_active ? "Activo" : "Inactivo"}
-                  </span>
+                  <div className="shrink-0 flex flex-col items-end gap-1">
+                    <span
+                      className={`text-xs font-medium rounded-full px-2.5 py-1 ${
+                        c.is_active
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {c.is_active ? "Activo" : "Inactivo"}
+                    </span>
+                    {c.is_hidden === 1 && (
+                      <span className="text-xs font-medium rounded-full px-2.5 py-1 bg-amber-100 text-amber-700">
+                        Oculto
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <h3 className="mt-4 font-semibold text-gray-900 truncate" title={c.name}>
                   {c.name}
@@ -412,7 +464,21 @@ export default function ComponentsManager({ categories }: { categories: string[]
                 <p className="text-xs uppercase tracking-wide text-gray-400 mt-0.5">
                   {meta.label}
                 </p>
-                <p className="mt-2 text-sm text-gray-500 line-clamp-2">{summaryOf(c)}</p>
+                <div className="mt-3 rounded-xl border border-gray-100 overflow-hidden bg-gray-50">
+                  <ScaledFrame src={`/preview/component/${c.id}`} />
+                </div>
+                <button
+                  onClick={() => toggleLoc(c)}
+                  className={`mt-3 w-full py-2 rounded-xl text-sm font-medium transition ${
+                    currentIds.includes(c.id)
+                      ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                      : "bg-blue-600 text-white hover:bg-blue-500"
+                  }`}
+                >
+                  {currentIds.includes(c.id)
+                    ? "✓ Agregado — quitar de la página"
+                    : "Agregar a esta página"}
+                </button>
               </div>
               <div className="border-t border-gray-100 flex items-stretch divide-x divide-gray-100 bg-gray-50/50">
                 <button
@@ -426,6 +492,12 @@ export default function ComponentsManager({ categories }: { categories: string[]
                   className="flex-1 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition"
                 >
                   {c.is_active ? "Desactivar" : "Activar"}
+                </button>
+                <button
+                  onClick={() => toggleHidden(c)}
+                  className="flex-1 py-2.5 text-sm font-medium text-amber-600 hover:bg-amber-50 transition"
+                >
+                  {c.is_hidden === 1 ? "Mostrar" : "Ocultar"}
                 </button>
                 {c.type === "form" && (
                   <button
@@ -448,7 +520,7 @@ export default function ComponentsManager({ categories }: { categories: string[]
 
         <button
           onClick={() =>
-            setEditing({ id: 0, name: "", type: "cta", props: emptyProps("cta"), is_active: 1 })
+            setEditing({ id: 0, name: "", type: "banner", props: emptyProps("banner"), is_active: 1, is_hidden: 0 })
           }
           className="min-h-[180px] rounded-2xl border-2 border-dashed border-gray-300 text-gray-400 hover:text-blue-500 hover:border-blue-300 hover:bg-blue-50/50 transition flex flex-col items-center justify-center gap-2"
         >
@@ -483,11 +555,102 @@ export default function ComponentsManager({ categories }: { categories: string[]
                   setEditing({ ...editing, type, props: emptyProps(type) });
                 }}
               >
-                {TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
+                <optgroup label="Interactivo (formulario)">
+                  {TYPES.filter((t) => t.group === "interactive").map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </optgroup>
+                <optgroup label="Usando código">
+                  {TYPES.filter((t) => t.group === "code").map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </optgroup>
               </select>
             </div>
+
+            {editing.type === "banner" && (
+              <>
+                <div className="grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setBannerMode("form")}
+                    className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+                      bannerMode === "form" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"
+                    }`}
+                  >
+                    Formulario
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBannerMode("code")}
+                    className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+                      bannerMode === "code" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"
+                    }`}
+                  >
+                    Código
+                  </button>
+                </div>
+
+                {bannerMode === "code" ? (
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className={labelCls}>HTML personalizado</label>
+                      <button
+                        type="button"
+                        onClick={toggleMedia}
+                        className="text-sm bg-gray-100 hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-lg px-3 py-1 transition"
+                      >
+                        {mediaOpen ? "Cerrar" : "Insertar imagen de Multimedia"}
+                      </button>
+                    </div>
+                    {mediaOpen && (
+                      <div className="mb-2 max-h-40 overflow-y-auto rounded-xl border border-gray-200 bg-gray-50 p-2">
+                        {mediaItems.length === 0 ? (
+                          <p className="text-xs text-gray-400 py-2 text-center">
+                            No hay imágenes en Multimedia. Sube algunas primero.
+                          </p>
+                        ) : (
+                          <div className="grid grid-cols-6 gap-2">
+                            {mediaItems.map((m) => (
+                              <button
+                                key={m.name}
+                                type="button"
+                                onClick={() => insertImage(m.url)}
+                                title={`Insertar ${m.name}`}
+                                className="aspect-square rounded-lg overflow-hidden border border-gray-100 hover:border-blue-300 bg-white"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={m.url} alt={m.name} className="w-full h-full object-cover" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <textarea
+                      className={inputCls + " font-mono text-sm"}
+                      rows={8}
+                      spellCheck={false}
+                      value={str(editing.props.html)}
+                      onChange={(e) => setProp("html", e.target.value)}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <div><label className={labelCls}>Título</label><input className={inputCls} value={str(editing.props.title)} onChange={(e) => setProp("title", e.target.value)} /></div>
+                    <div><label className={labelCls}>Subtítulo</label><input className={inputCls} value={str(editing.props.subtitle)} onChange={(e) => setProp("subtitle", e.target.value)} /></div>
+                    <div>
+                      <label className={labelCls}>Imagen</label>
+                      <ImagePicker value={str(editing.props.image)} onChange={(url) => setProp("image", url)} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div><label className={labelCls}>Texto del botón</label><input className={inputCls} value={str(editing.props.button_text)} onChange={(e) => setProp("button_text", e.target.value)} /></div>
+                      <div><label className={labelCls}>Enlace del botón</label><input className={inputCls} value={str(editing.props.button_link)} onChange={(e) => setProp("button_link", e.target.value)} /></div>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
 
             {editing.type === "cta" && (
               <>
@@ -502,7 +665,40 @@ export default function ComponentsManager({ categories }: { categories: string[]
 
             {editing.type === "html" && (
               <div>
-                <label className={labelCls}>HTML</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className={labelCls}>HTML</label>
+                  <button
+                    type="button"
+                    onClick={toggleMedia}
+                    className="text-sm bg-gray-100 hover:bg-blue-50 text-gray-700 hover:text-blue-700 rounded-lg px-3 py-1 transition"
+                  >
+                    {mediaOpen ? "Cerrar" : "Insertar imagen de Multimedia"}
+                  </button>
+                </div>
+                {mediaOpen && (
+                  <div className="mb-2 max-h-40 overflow-y-auto rounded-xl border border-gray-200 bg-gray-50 p-2">
+                    {mediaItems.length === 0 ? (
+                      <p className="text-xs text-gray-400 py-2 text-center">
+                        No hay imágenes en Multimedia. Sube algunas primero.
+                      </p>
+                    ) : (
+                      <div className="grid grid-cols-6 gap-2">
+                        {mediaItems.map((m) => (
+                          <button
+                            key={m.name}
+                            type="button"
+                            onClick={() => insertImage(m.url)}
+                            title={`Insertar ${m.name}`}
+                            className="aspect-square rounded-lg overflow-hidden border border-gray-100 hover:border-blue-300 bg-white"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={m.url} alt={m.name} className="w-full h-full object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
                 <textarea className={inputCls + " font-mono text-sm"} rows={8} spellCheck={false} value={str(editing.props.html)} onChange={(e) => setProp("html", e.target.value)} />
               </div>
             )}
@@ -558,6 +754,10 @@ export default function ComponentsManager({ categories }: { categories: string[]
             <label className="flex items-center gap-3 cursor-pointer">
               <input type="checkbox" checked={editing.is_active === 1} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked ? 1 : 0 })} className="w-4 h-4 rounded accent-blue-600" />
               <span className="text-sm text-gray-700">Activo</span>
+            </label>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" checked={editing.is_hidden === 1} onChange={(e) => setEditing({ ...editing, is_hidden: e.target.checked ? 1 : 0 })} className="w-4 h-4 rounded accent-blue-600" />
+              <span className="text-sm text-gray-700">Ocultar del sitio</span>
             </label>
 
             <div className="flex justify-end gap-3 pt-2">

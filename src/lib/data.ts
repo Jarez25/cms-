@@ -55,6 +55,7 @@ export interface BannerData {
   button_text: string;
   button_link: string;
   is_active: number;
+  is_hidden: number;
   sort_order: number;
 }
 
@@ -338,7 +339,7 @@ export async function getBanners(
   providerId: number | null = null
 ): Promise<BannerData[]> {
   const [where, params] = providerWhere(providerId);
-  const active = onlyActive ? "AND is_active = 1" : "";
+  const active = onlyActive ? "AND is_active = 1 AND is_hidden = 0" : "";
   const [rows] = await db.query<RowDataPacket[]>(
     `SELECT * FROM cms_banners WHERE ${where} ${active} ORDER BY sort_order ASC, id ASC`,
     params
@@ -354,6 +355,7 @@ export async function getBanners(
     button_text: row.button_text,
     button_link: row.button_link,
     is_active: row.is_active,
+    is_hidden: row.is_hidden == null ? 0 : Number(row.is_hidden),
     sort_order: row.sort_order,
   }));
 }
@@ -781,12 +783,13 @@ export interface ComponentData {
   type: string;
   props: Record<string, unknown>;
   is_active: number;
+  is_hidden: number;
 }
 
 export async function getComponents(providerId: number | null): Promise<ComponentData[]> {
   const [where, params] = providerWhere(providerId);
   const [rows] = await db.query<RowDataPacket[]>(
-    `SELECT id, provider_id, name, type, props, is_active FROM cms_components WHERE ${where} ORDER BY id ASC`,
+    `SELECT id, provider_id, name, type, props, is_active, is_hidden FROM cms_components WHERE ${where} ORDER BY id ASC`,
     params
   );
   return rows.map((row) => ({
@@ -796,12 +799,13 @@ export async function getComponents(providerId: number | null): Promise<Componen
     type: row.type,
     props: parseJson<Record<string, unknown>>(row.props, {}),
     is_active: Number(row.is_active),
+    is_hidden: row.is_hidden == null ? 0 : Number(row.is_hidden),
   }));
 }
 
 export async function getComponentById(id: number): Promise<ComponentData | null> {
   const [rows] = await db.query<RowDataPacket[]>(
-    "SELECT id, provider_id, name, type, props, is_active FROM cms_components WHERE id = ? LIMIT 1",
+    "SELECT id, provider_id, name, type, props, is_active, is_hidden FROM cms_components WHERE id = ? LIMIT 1",
     [id]
   );
   if (!rows.length) return null;
@@ -813,6 +817,7 @@ export async function getComponentById(id: number): Promise<ComponentData | null
     type: row.type,
     props: parseJson<Record<string, unknown>>(row.props, {}),
     is_active: Number(row.is_active),
+    is_hidden: row.is_hidden == null ? 0 : Number(row.is_hidden),
   };
 }
 
@@ -847,7 +852,7 @@ export async function getLocationComponents(
   const byId = new Map(all.map((c) => [c.id, c]));
   return ids
     .map((id) => byId.get(id))
-    .filter((c): c is ComponentData => !!c && c.is_active === 1);
+    .filter((c): c is ComponentData => !!c && c.is_active === 1 && c.is_hidden === 0);
 }
 
 export async function getHomeComponentIds(providerId: number | null): Promise<number[]> {

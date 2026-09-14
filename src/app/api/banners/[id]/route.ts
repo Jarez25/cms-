@@ -20,7 +20,7 @@ export async function PUT(request: Request, ctx: Ctx) {
     `UPDATE cms_banners SET
        title = ?, subtitle = ?, image = ?, image_position = ?, text_position = ?,
        button_text = ?, button_link = ?,
-       is_active = ?, sort_order = ?
+       is_active = ?, is_hidden = ?, sort_order = ?
      WHERE id = ?`,
     [
       body.title ?? "",
@@ -31,6 +31,7 @@ export async function PUT(request: Request, ctx: Ctx) {
       body.button_text ?? "",
       body.button_link ?? "",
       body.is_active ? 1 : 0,
+      body.is_hidden ? 1 : 0,
       Number(body.sort_order ?? 0),
       Number(id),
     ]

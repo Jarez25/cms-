@@ -63,6 +63,7 @@ export default function DocsPage() {
             ["#banners", "Banners"],
             ["#codigo", "Código"],
             ["#endpoint", "Endpoint"],
+            ["#api", "API pública"],
           ].map(([href, label]) => (
             <li key={href}>
               <a href={href} className="block rounded-lg px-3 py-2 text-gray-600 hover:bg-blue-50 hover:text-blue-700">
@@ -181,10 +182,11 @@ alertify.prompt('Tu email', 'por defecto@x.com', function (evt, value) {
       >
         <p>
           Ve a <Link href="/admin/components" className="text-blue-600 underline">Componentes</Link>.
-          Existen 4 tipos:
+          Existen 5 tipos:
         </p>
         <div className="grid gap-3 md:grid-cols-2">
           {[
+            ["Banner (visual)", "Banner con imagen, título, subtítulo y botón. También admite modo Código."],
             ["HTML", "Texto/formato libre. Pega el HTML que quieras renderizar."],
             ["CTA", "Llamada a la acción con título, subtítulo y botón."],
             ["Formulario", "Formulario configurable; los envíos se guardan y se pueden revisar."],
@@ -197,8 +199,10 @@ alertify.prompt('Tu email', 'por defecto@x.com', function (evt, value) {
           ))}
         </div>
         <p>
-          Los componentes activos se muestran en la <strong>portada</strong> (sección Inicio). También
-          puedes asignar componentes a una <strong>página</strong> desde el editor de páginas.
+          Cada tarjeta muestra una <strong>vista previa en vivo</strong> de cómo se verá el
+          componente en el sitio. Usa <strong>Agregar a esta página</strong> para asignarlo a la
+          página seleccionada en «Mostrar en una página» (inicio, tienda, nosotros, contacto o una
+          página del CMS). También puedes <strong>Ocultar</strong> un componente sin borrarlo.
         </p>
       </Section>
 
@@ -287,6 +291,142 @@ alertify.prompt('Tu email', 'por defecto@x.com', function (evt, value) {
           El sistema mapea campos comunes automáticamente (nombre, precio, stock, categoría, marca,
           imagen, etc.).
         </p>
+      </Section>
+
+      <Section
+        id="api"
+        title="API pública — crear tus propias vistas"
+        subtitle="Consume tu catálogo en JSON desde HTML/JS y arma vitrinas personalizadas."
+      >
+        <p>
+          El CMS expone el catálogo en JSON para que construyas vistas propias (tiendas, listados,
+          vitrinas) sin tocar el panel. Responden en la misma URL del sitio.
+        </p>
+
+        <p className="font-semibold text-gray-900">Endpoints</p>
+        <div className="overflow-x-auto rounded-xl border border-gray-200">
+          <table className="w-full text-xs">
+            <thead className="bg-gray-50 text-left">
+              <tr>
+                <th className="px-3 py-2 font-semibold text-gray-500">Endpoint</th>
+                <th className="px-3 py-2 font-semibold text-gray-500">Devuelve</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              <tr>
+                <td className="px-3 py-2 font-mono text-blue-600">GET /api/public/products</td>
+                <td className="px-3 py-2">{`{ items, total, page, pages }`}</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 font-mono text-blue-600">GET /api/public/brands</td>
+                <td className="px-3 py-2">Array de marcas (strings)</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 font-mono text-blue-600">GET /api/public/categories</td>
+                <td className="px-3 py-2">Array de categorías (strings)</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 font-mono text-blue-600">GET /api/settings</td>
+                <td className="px-3 py-2">Ajustes (incluye <code className="font-mono">currency</code>)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p className="font-semibold text-gray-900">Parámetros de /api/public/products</p>
+        <div className="overflow-x-auto rounded-xl border border-gray-200">
+          <table className="w-full text-xs">
+            <thead className="bg-gray-50 text-left">
+              <tr>
+                <th className="px-3 py-2 font-semibold text-gray-500">Parámetro</th>
+                <th className="px-3 py-2 font-semibold text-gray-500">Descripción</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {[
+                ["q", "Busca por nombre, categoría o marca"],
+                ["category", "Filtra por categoría exacta"],
+                ["brand", "Filtra por marca exacta (ej. ADATA)"],
+                ["min / max", "Rango de precio"],
+                ["page / limit", "Paginación (limit máx. 100)"],
+                ["provider", "Id de proveedor (multi-sitio)"],
+              ].map(([k, d]) => (
+                <tr key={k}>
+                  <td className="px-3 py-2 font-mono text-blue-600">{k}</td>
+                  <td className="px-3 py-2">{d}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          Cada producto trae: <code className="font-mono">id, name, slug, sku, description, price,
+          image, category, brand, stock, is_active, is_hidden, sort_order</code>. El{" "}
+          <code className="font-mono">price</code> llega como texto (ej.{" "}
+          <code className="font-mono">{`"3300.00"`}</code>), conviértelo a número antes de formatearlo.
+        </p>
+
+        <p className="font-semibold text-gray-900">Cómo armar una vista propia</p>
+        <div className="space-y-2">
+          <Step n={1}>
+            En <Link href="/admin/pages" className="text-blue-600 underline">Páginas</Link> crea una y
+            pega el contenedor: <code className="font-mono">{`<div id="vitrina-tienda"></div>`}</code>.
+          </Step>
+          <Step n={2}>
+            En <Link href="/admin/code" className="text-blue-600 underline">Código → JavaScript (abajo)</Link>{" "}
+            pega el script que consume el API y renderiza los productos.
+          </Step>
+        </div>
+        <p className="text-gray-500">
+          El HTML de la página no ejecuta scripts por seguridad; por eso la lógica va en «Código»,
+          que sí se ejecuta en todo el sitio.
+        </p>
+
+        <p className="font-semibold text-gray-900">Ejemplo: vitrina con filtro por marca</p>
+        <Code>{`// Coloca en una Página:  <div id="vitrina-tienda"></div>
+// Y este script en:  Código → JavaScript (abajo)
+
+(async function () {
+  var el = document.getElementById('vitrina-tienda');
+  if (!el) return;
+
+  // 1) Cargar marcas
+  var brands = await fetch('/api/public/brands').then(function (r) { return r.json(); });
+  var select = document.createElement('select');
+  select.innerHTML = '<option value="">Todas las marcas</option>' +
+    brands.map(function (b) {
+      return '<option' + (b === 'ADATA' ? ' selected' : '') + '>' + b + '</option>';
+    }).join('');
+  select.style.cssText = 'margin-bottom:16px;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;font-size:14px';
+  el.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px';
+  el.parentNode.insertBefore(select, el);
+
+  var currency = 'S/.';
+  try { currency = (await fetch('/api/settings').then(function (r) { return r.json(); })).currency || currency; } catch (e) {}
+
+  async function cargar() {
+    el.innerHTML = '<p style="color:#94a3b8">Cargando...</p>';
+    var brand = select.value;
+    var url = '/api/public/products?limit=24' + (brand ? '&brand=' + encodeURIComponent(brand) : '');
+    var data = await fetch(url).then(function (r) { return r.json(); });
+    el.innerHTML = (data.items || []).map(function (p) {
+      var price = Number(p.price) || 0;
+      return '<div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden">' +
+        '<img src="' + (p.image || '') + '" style="width:100%;height:150px;object-fit:contain;background:#f1f5f9">' +
+        '<div style="padding:12px">' +
+        '<div style="font-size:11px;color:#64748b;text-transform:uppercase">' + (p.brand || '&nbsp;') + '</div>' +
+        '<div style="font-size:13px;font-weight:600;line-height:1.35">' + p.name + '</div>' +
+        '<div style="font-size:11px;color:#94a3b8">SKU: ' + (p.sku || '—') + '</div>' +
+        '<div style="font-size:16px;font-weight:800;color:#4f46e5;margin-top:6px">' +
+          currency + price.toLocaleString('es-PE', { minimumFractionDigits: 2 }) + '</div>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  select.addEventListener('change', cargar);
+  cargar();
+})();`}</Code>
       </Section>
     </div>
   );

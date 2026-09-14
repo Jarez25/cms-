@@ -14,8 +14,8 @@ export async function POST(request: Request) {
   if (!scope) return Response.json({ error: "No autorizado" }, { status: 401 });
   const body = await request.json();
   const [result] = await db.query<ResultSetHeader>(
-    `INSERT INTO cms_banners (provider_id, title, subtitle, image, image_position, text_position, button_text, button_link, is_active, sort_order)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO cms_banners (provider_id, title, subtitle, image, image_position, text_position, button_text, button_link, is_active, is_hidden, sort_order)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       scope.providerId,
       body.title ?? "",
@@ -26,6 +26,7 @@ export async function POST(request: Request) {
       body.button_text ?? "",
       body.button_link ?? "",
       body.is_active ? 1 : 0,
+      body.is_hidden ? 1 : 0,
       Number(body.sort_order ?? 0),
     ]
   );
