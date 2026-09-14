@@ -112,9 +112,3 @@ public/uploads/       # Imágenes subidas (gitignored)
 - **Autenticación**: cookie firmada `cms_admin_token` (HMAC-SHA256). Dos roles: `superadmin` y `provider`.
 - **Multi-tenant**: las tablas de contenido usan `provider_id` (NULL = sitio principal, id = proveedor). Cada proveedor gestiona su propio sitio.
 - **Migraciones**: `npm run migrate` aplica en orden los archivos SQL de `migrations/` y registra las ya aplicadas en `schema_migrations`.
-
-## Notas de seguridad
-
-- No subas `.env` al repositorio.
-- Cambia `ADMIN_PASSWORD` y `ADMIN_TOKEN_SECRET` en producción.
-- La carpeta `public/uploads/` está gitignored.
