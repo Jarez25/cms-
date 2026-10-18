@@ -19,7 +19,14 @@ export const PRESETS: Record<string, Palette> = {
 
 export const PRESET_NAMES = Object.keys(PRESETS);
 
-export type ThemeId = "default" | "halloween" | "christmas" | "valentine";
+export type ThemeId =
+  | "default"
+  | "halloween"
+  | "christmas"
+  | "valentine"
+  | "blackfriday"
+  | "newyear"
+  | "summer";
 
 export interface SeasonTheme {
   id: ThemeId;
@@ -49,7 +56,7 @@ export interface SeasonTheme {
     product: string;
     banner: string;
   };
-  effect: "none" | "halloween" | "christmas" | "valentine";
+  effect: "none" | "halloween" | "christmas" | "valentine" | "blackfriday" | "newyear" | "summer";
 }
 
 export const SEASON_THEMES: Record<ThemeId, SeasonTheme> = {
@@ -171,6 +178,96 @@ export const SEASON_THEMES: Record<ThemeId, SeasonTheme> = {
       banner: "EDICIÓN AMOR & AMISTAD",
     },
     effect: "valentine",
+  },
+  blackfriday: {
+    id: "blackfriday",
+    name: "Black Friday & Cyber Week",
+    subtitle: "Mega Descuentos & Cyber Sale",
+    description: "Estética Dark Luxury de alto impacto con negro azabache, amarillo eléctrico neón, relámpagos dorados, badges de % OFF extremo y resplandor cibernético.",
+    icon: "🖤",
+    emoji: "⚡",
+    previewBg: "from-zinc-950 via-neutral-900 to-black",
+    previewGradients: "from-yellow-500 via-amber-500 to-emerald-500",
+    palette: {
+      primary: "#eab308",
+      light: "#facc15",
+      dark: "#ca8a04",
+      soft: "#fefce8",
+      accent: "#22c55e",
+      gold: "#fbbf24",
+      glow: "rgba(234, 179, 8, 0.65)",
+    },
+    announcement: {
+      badge: "⚡ BLACK FRIDAY",
+      text: "🔥 ¡Mega Descuentos de Black Friday! Hasta 60% OFF en tecnología y accesorios por tiempo limitado 💥",
+      ctaText: "Aprovechar ofertas",
+      ctaLink: "/tienda",
+    },
+    badges: {
+      product: "⚡ BLACK FRIDAY -XX%",
+      banner: "CYBER & BLACK FRIDAY",
+    },
+    effect: "blackfriday",
+  },
+  newyear: {
+    id: "newyear",
+    name: "Año Nuevo & Gala",
+    subtitle: "Celebración, Brindis & Fin de Año",
+    description: "Atmósfera de gala y celebración con azul noche profundo, oro imperial resplandeciente, fuegos artificiales animados con explosiones de confeti en Canvas y copas de brindis.",
+    icon: "🎆",
+    emoji: "🍾",
+    previewBg: "from-slate-950 via-purple-950 to-neutral-950",
+    previewGradients: "from-amber-400 via-yellow-500 to-purple-600",
+    palette: {
+      primary: "#d97706",
+      light: "#fbbf24",
+      dark: "#92400e",
+      soft: "#fffbeb",
+      accent: "#7c3aed",
+      gold: "#f59e0b",
+      glow: "rgba(245, 158, 11, 0.6)",
+    },
+    announcement: {
+      badge: "🎆 FELIZ AÑO NUEVO",
+      text: "🍾 ¡Bienvenido el Nuevo Año! Celebra y equípate con las mejores ofertas exclusivas de fin de año 🥂",
+      ctaText: "Ver colección de gala",
+      ctaLink: "/tienda",
+    },
+    badges: {
+      product: "✨ Edición Fin de Año",
+      banner: "GALA DE AÑO NUEVO",
+    },
+    effect: "newyear",
+  },
+  summer: {
+    id: "summer",
+    name: "Verano & Summer Fest",
+    subtitle: "Sol, Vacaciones & Ofertas Tropicales",
+    description: "Energía vibrante y refrescante con azul turquesa océano, amarillo sol tropical, naranja atardecer cálido, palmeras vectoriales y destellos de sol resplandecientes.",
+    icon: "🌴",
+    emoji: "☀️",
+    previewBg: "from-sky-950 via-teal-950 to-amber-950",
+    previewGradients: "from-sky-500 via-teal-500 to-amber-400",
+    palette: {
+      primary: "#0284c7",
+      light: "#38bdf8",
+      dark: "#0369a1",
+      soft: "#f0f9ff",
+      accent: "#f59e0b",
+      gold: "#fbbf24",
+      glow: "rgba(2, 132, 199, 0.55)",
+    },
+    announcement: {
+      badge: "☀️ SUMMER FEST",
+      text: "🌴 ¡Temporada de Verano! Los mejores gadgets para tus viajes, playa y vacaciones con envíos gratis 🏖️",
+      ctaText: "Ver ofertas de verano",
+      ctaLink: "/tienda",
+    },
+    badges: {
+      product: "🌴 Especial Verano",
+      banner: "SUMMER VIBES",
+    },
+    effect: "summer",
   },
 };
 

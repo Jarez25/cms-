@@ -57,6 +57,36 @@
   --season-glow: rgba(225, 29, 72, 0.55);
 }
 
+[data-theme="blackfriday"] {
+  --primary: #eab308;
+  --primary-light: #facc15;
+  --primary-dark: #ca8a04;
+  --primary-soft: #fefce8;
+  --season-accent: #22c55e;
+  --season-gold: #fbbf24;
+  --season-glow: rgba(234, 179, 8, 0.65);
+}
+
+[data-theme="newyear"] {
+  --primary: #d97706;
+  --primary-light: #fbbf24;
+  --primary-dark: #92400e;
+  --primary-soft: #fffbeb;
+  --season-accent: #7c3aed;
+  --season-gold: #f59e0b;
+  --season-glow: rgba(245, 158, 11, 0.6);
+}
+
+[data-theme="summer"] {
+  --primary: #0284c7;
+  --primary-light: #38bdf8;
+  --primary-dark: #0369a1;
+  --primary-soft: #f0f9ff;
+  --season-accent: #f59e0b;
+  --season-gold: #fbbf24;
+  --season-glow: rgba(2, 132, 199, 0.55);
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -234,6 +264,18 @@ body {
   background: #ffe4e6;
   color: #881337;
 }
+[data-theme="blackfriday"] ::selection {
+  background: #fef08a;
+  color: #000000;
+}
+[data-theme="newyear"] ::selection {
+  background: #fef3c7;
+  color: #78350f;
+}
+[data-theme="summer"] ::selection {
+  background: #e0f2fe;
+  color: #0369a1;
+}
 
 /* Efectos visuales de temporada aplicados a todo el sitio */
 [data-theme="christmas"] .group:hover .rounded-2xl {
@@ -246,6 +288,31 @@ body {
 
 [data-theme="valentine"] .group:hover .rounded-2xl {
   box-shadow: 0 10px 25px -5px rgba(225, 29, 72, 0.28), 0 0 15px rgba(236, 72, 153, 0.2);
+}
+
+[data-theme="blackfriday"] .group:hover .rounded-2xl {
+  box-shadow: 0 10px 25px -5px rgba(234, 179, 8, 0.35), 0 0 15px rgba(34, 197, 94, 0.2);
+}
+
+[data-theme="newyear"] .group:hover .rounded-2xl {
+  box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.3), 0 0 15px rgba(124, 58, 237, 0.2);
+}
+
+[data-theme="summer"] .group:hover .rounded-2xl {
+  box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.28), 0 0 15px rgba(245, 158, 11, 0.2);
+}
+
+/* AISLAMIENTO DEL PANEL DE ADMINISTRACIÓN:
+   Garantiza que el panel administrativo (/admin) conserve siempre su paleta
+   limpia y profesional, libre de efectos, destellos o cambios estacionales. */
+.admin-shell {
+  --primary: #2563eb !important;
+  --primary-light: #3b82f6 !important;
+  --primary-dark: #1d4ed8 !important;
+  --primary-soft: #eff6ff !important;
+  --season-accent: #06b6d4 !important;
+  --season-gold: #f59e0b !important;
+  --season-glow: transparent !important;
 }
 
 /* Animación de latido romántico */

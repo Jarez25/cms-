@@ -423,7 +423,7 @@ export default function AdminShell({ role, providerName, providerSlug, logo, chi
   );
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen flex bg-gray-50 admin-shell" data-theme="admin">
       {/* Sidebar desktop */}
       <aside
         className={`hidden lg:flex ${

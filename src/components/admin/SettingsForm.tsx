@@ -117,7 +117,7 @@ export default function SettingsForm({ initial }: Props) {
                 </span>
               </div>
               <p className="text-xs text-gray-600 mt-0.5">
-                Campañas temáticas exclusivas (Halloween 🎃, Navidad 🎄, San Valentín 💖).
+                Campañas temáticas exclusivas (Halloween 🎃, Navidad 🎄, San Valentín 💖, Black Friday ⚡, Año Nuevo 🎆, Verano 🌴).
               </p>
             </div>
           </div>

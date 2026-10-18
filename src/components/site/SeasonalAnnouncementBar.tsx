@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { getSeasonTheme } from "@/lib/theme";
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 export default function SeasonalAnnouncementBar({ activeTheme }: Props) {
   const [dismissed, setDismissed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
@@ -20,7 +22,14 @@ export default function SeasonalAnnouncementBar({ activeTheme }: Props) {
     }
   }, [activeTheme]);
 
-  if (!mounted || dismissed || activeTheme === "default") {
+  // NUNCA mostrar la barra de anuncios en el panel de administración ni en login
+  if (
+    !mounted ||
+    dismissed ||
+    activeTheme === "default" ||
+    pathname?.startsWith("/admin") ||
+    pathname?.startsWith("/login")
+  ) {
     return null;
   }
 
@@ -38,6 +47,12 @@ export default function SeasonalAnnouncementBar({ activeTheme }: Props) {
       "from-red-600 via-emerald-700 to-amber-500 border-b border-amber-300/40 text-white shadow-lg shadow-red-950/20",
     valentine:
       "from-rose-600 via-pink-600 to-amber-500 border-b border-rose-300/40 text-white shadow-lg shadow-rose-950/20",
+    blackfriday:
+      "from-zinc-950 via-yellow-600 to-black border-b border-yellow-400/40 text-white shadow-lg shadow-yellow-950/20",
+    newyear:
+      "from-slate-950 via-amber-600 to-purple-950 border-b border-amber-300/40 text-white shadow-lg shadow-amber-950/20",
+    summer:
+      "from-sky-600 via-teal-600 to-amber-500 border-b border-amber-300/40 text-white shadow-lg shadow-sky-950/20",
   };
 
   const bgClass = gradients[activeTheme] || "from-blue-600 to-indigo-700 text-white";
