@@ -29,29 +29,32 @@
 
 [data-theme="halloween"] {
   --primary: #ea580c;
-  --primary-light: #f97316;
-  --primary-dark: #9a3412;
+  --primary-light: #fb923c;
+  --primary-dark: #7c2d12;
   --primary-soft: #fff7ed;
   --season-accent: #9333ea;
   --season-gold: #f59e0b;
+  --season-glow: rgba(234, 88, 12, 0.55);
 }
 
 [data-theme="christmas"] {
   --primary: #dc2626;
-  --primary-light: #ef4444;
+  --primary-light: #f87171;
   --primary-dark: #991b1b;
   --primary-soft: #fef2f2;
-  --season-accent: #15803d;
-  --season-gold: #eab308;
+  --season-accent: #059669;
+  --season-gold: #fbbf24;
+  --season-glow: rgba(220, 38, 38, 0.55);
 }
 
 [data-theme="valentine"] {
   --primary: #e11d48;
-  --primary-light: #f43f5e;
-  --primary-dark: #9f1239;
+  --primary-light: #fb7185;
+  --primary-dark: #881337;
   --primary-soft: #fff1f2;
   --season-accent: #ec4899;
-  --season-gold: #f59e0b;
+  --season-gold: #fbbf24;
+  --season-glow: rgba(225, 29, 72, 0.55);
 }
 
 html {
@@ -216,6 +219,59 @@ body {
 }
 .modal-enter {
   animation: modalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Selección de texto según temporada */
+[data-theme="halloween"] ::selection {
+  background: #ffedd5;
+  color: #7c2d12;
+}
+[data-theme="christmas"] ::selection {
+  background: #fee2e2;
+  color: #7f1d1d;
+}
+[data-theme="valentine"] ::selection {
+  background: #ffe4e6;
+  color: #881337;
+}
+
+/* Efectos visuales de temporada aplicados a todo el sitio */
+[data-theme="christmas"] .group:hover .rounded-2xl {
+  box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.25), 0 0 15px rgba(251, 191, 36, 0.15);
+}
+
+[data-theme="halloween"] .group:hover .rounded-2xl {
+  box-shadow: 0 10px 25px -5px rgba(234, 88, 12, 0.3), 0 0 15px rgba(147, 51, 234, 0.2);
+}
+
+[data-theme="valentine"] .group:hover .rounded-2xl {
+  box-shadow: 0 10px 25px -5px rgba(225, 29, 72, 0.28), 0 0 15px rgba(236, 72, 153, 0.2);
+}
+
+/* Animación de latido romántico */
+@keyframes heartbeatPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.3);
+  }
+  14% {
+    transform: scale(1.035);
+    box-shadow: 0 6px 20px rgba(225, 29, 72, 0.5);
+  }
+  28% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.3);
+  }
+  42% {
+    transform: scale(1.02);
+    box-shadow: 0 6px 18px rgba(225, 29, 72, 0.4);
+  }
+  70% {
+    transform: scale(1);
+  }
+}
+[data-theme="valentine"] .btn-heartbeat {
+  animation: heartbeatPulse 2.8s ease-in-out infinite;
 }
 
 /* Respetar usuarios que prefieren menos movimiento */

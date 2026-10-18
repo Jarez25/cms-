@@ -28,6 +28,8 @@ export async function PUT(request: Request) {
     theme_primary_light: theme.palette.light,
     theme_primary_dark: theme.palette.dark,
     theme_primary_soft: theme.palette.soft,
+    theme_accent: theme.palette.accent,
+    theme_gold: theme.palette.gold || "#fbbf24",
   };
 
   for (const [key, value] of Object.entries(updates)) {

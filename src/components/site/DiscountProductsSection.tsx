@@ -130,7 +130,7 @@ export default function DiscountProductsSection({
               <Link
                 key={p.id}
                 href={`${productBase}/${p.slug}`}
-                className="group w-[230px] sm:w-[260px] flex-shrink-0 bg-white rounded-3xl border border-red-100 shadow-sm hover:shadow-xl hover:border-red-300 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                className="group w-[230px] sm:w-[260px] flex-shrink-0 bg-white rounded-3xl border border-red-100 shadow-sm hover:shadow-xl hover:border-red-300 transition-all duration-300 flex flex-col justify-between overflow-hidden product-card"
               >
                 {/* Imagen del Producto */}
                 <div className="relative aspect-square w-full bg-gray-50 overflow-hidden">

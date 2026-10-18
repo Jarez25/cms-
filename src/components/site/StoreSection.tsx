@@ -258,7 +258,7 @@ export default function StoreSection({
                 <Link
                   key={p.id}
                   href={`${productBase}/${p.slug}`}
-                  className="group bg-white rounded-3xl border border-gray-200/90 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col justify-between overflow-hidden"
+                  className="group bg-white rounded-3xl border border-gray-200/90 shadow-sm hover:shadow-xl hover:border-primary/50 transition-all duration-300 flex flex-col justify-between overflow-hidden product-card"
                 >
                   {/* Imagen */}
                   <div className="relative aspect-square w-full bg-gray-50 overflow-hidden">

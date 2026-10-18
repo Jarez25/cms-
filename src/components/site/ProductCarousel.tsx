@@ -72,7 +72,7 @@ export default function ProductCarousel({ title, products, currency, productBase
             <Link
               key={p.id}
               href={`${productBase}/${p.slug}`}
-              className="w-[210px] md:w-[240px] shrink-0 snap-start group bg-white rounded-3xl border border-gray-200/80 overflow-hidden shadow-2xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col"
+              className="w-[210px] md:w-[240px] shrink-0 snap-start group bg-white rounded-3xl border border-gray-200/80 overflow-hidden shadow-2xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col product-card"
             >
               {/* Imagen con Badges */}
               <div className="aspect-square bg-gray-50 overflow-hidden relative border-b border-gray-100">
