@@ -30,12 +30,13 @@ export async function POST(request: Request) {
   }
 
   const [result] = await db.query<ResultSetHeader>(
-    `INSERT INTO cms_categories (provider_id, name, slug, description, is_active, is_hidden)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO cms_categories (provider_id, name, slug, image, description, is_active, is_hidden)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [
       scope.providerId,
       name,
       slug,
+      String(body.image ?? "").trim(),
       body.description ?? "",
       body.is_active === false || body.is_active === 0 ? 0 : 1,
       body.is_hidden ? 1 : 0,

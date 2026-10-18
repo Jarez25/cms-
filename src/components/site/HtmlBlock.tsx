@@ -17,10 +17,14 @@ export default function HtmlBlock({ html }: { html: string }) {
 
     const scripts = Array.from(el.querySelectorAll("script"));
     scripts.forEach((old) => {
-      const s = document.createElement("script");
-      Array.from(old.attributes).forEach((attr) => s.setAttribute(attr.name, attr.value));
-      s.textContent = old.textContent;
-      old.parentNode?.replaceChild(s, old);
+      try {
+        const s = document.createElement("script");
+        Array.from(old.attributes).forEach((attr) => s.setAttribute(attr.name, attr.value));
+        s.textContent = old.textContent;
+        old.parentNode?.replaceChild(s, old);
+      } catch (err) {
+        console.warn("Error ejecutando script en HtmlBlock:", err);
+      }
     });
   }, [html]);
 

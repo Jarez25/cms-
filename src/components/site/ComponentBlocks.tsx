@@ -28,7 +28,9 @@ export default async function ComponentBlocks({
       if (c.type === "products") {
         const category = String(c.props.category ?? "");
         const limit = Math.min(Math.max(Number(c.props.limit ?? 10) || 10, 1), 24);
-        const res = await getProductsPaginated(providerId, { limit, category });
+        const min = c.props.min != null && c.props.min !== "" ? Number(c.props.min) : undefined;
+        const max = c.props.max != null && c.props.max !== "" ? Number(c.props.max) : undefined;
+        const res = await getProductsPaginated(providerId, { limit, category, min, max });
         products = res.items;
       }
       return { c, products };
@@ -40,7 +42,19 @@ export default async function ComponentBlocks({
       {rendered.map(({ c, products }) => {
         const p = c.props as Record<string, unknown>;
         switch (c.type) {
-          case "html":
+          case "html": {
+            const isFullWidth = Boolean(
+              p.full_width ||
+                String(p.html ?? "").includes('data-full-width="true"') ||
+                String(p.html ?? "").includes("data-fullwidth")
+            );
+            if (isFullWidth) {
+              return (
+                <div key={c.id} className="w-full">
+                  <HtmlBlock html={String(p.html ?? "")} />
+                </div>
+              );
+            }
             return (
               <section key={c.id} className="py-10">
                 <div className="max-w-6xl mx-auto px-4">
@@ -48,6 +62,7 @@ export default async function ComponentBlocks({
                 </div>
               </section>
             );
+          }
           case "banner": {
             if (String(p.html ?? "").trim()) {
               return (

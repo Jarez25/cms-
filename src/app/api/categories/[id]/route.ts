@@ -20,10 +20,14 @@ export async function PUT(request: Request, ctx: Ctx) {
   const name = String(body.name ?? "").trim();
   if (!name) return Response.json({ error: "El nombre es requerido" }, { status: 400 });
 
+  const slug = body.slug ? String(body.slug).trim() : undefined;
+  const image = body.image !== undefined ? String(body.image).trim() : "";
+
   await db.query(
-    "UPDATE cms_categories SET name = ?, description = ?, is_active = ?, is_hidden = ? WHERE id = ?",
+    "UPDATE cms_categories SET name = ?, image = ?, description = ?, is_active = ?, is_hidden = ? WHERE id = ?",
     [
       name,
+      image,
       body.description ?? "",
       body.is_active === false || body.is_active === 0 ? 0 : 1,
       body.is_hidden ? 1 : 0,

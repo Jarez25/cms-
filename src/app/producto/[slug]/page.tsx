@@ -14,10 +14,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(slug, null);
   if (!product) return {};
-  const header = await getHeader(null);
-  const settings = await getSettings();
+
+  const [header, settings] = await Promise.all([getHeader(null), getSettings()]);
+  const siteName = header?.site_name || settings.site_title || "Mi Sitio";
+  const title = `${product.name} | ${siteName}`;
+  const description =
+    product.description?.slice(0, 160) ||
+    `Compra ${product.name} al mejor precio en ${siteName}.`;
+
   return {
-    title: `${product.name} - ${header?.site_name || settings.site_title || "Mi Sitio"}`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      images: product.image ? [{ url: product.image, alt: product.name }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: product.image ? [product.image] : [],
+    },
   };
 }
 

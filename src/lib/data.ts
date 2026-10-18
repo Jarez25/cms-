@@ -67,6 +67,7 @@ export interface ProductData {
   sku: string;
   description: string;
   price: number;
+  compare_price?: number | null;
   image: string;
   category: string;
   brand: string;
@@ -103,6 +104,7 @@ export interface CategoryData {
   provider_id: number | null;
   name: string;
   slug: string;
+  image: string;
   description: string;
   is_active: number;
   is_hidden: number;
@@ -115,7 +117,7 @@ export async function getCategories(
   const [where, params] = providerWhere(providerId);
   const active = onlyActive ? "AND is_active = 1" : "";
   const [rows] = await db.query<RowDataPacket[]>(
-    `SELECT id, provider_id, name, slug, description, is_active, is_hidden
+    `SELECT id, provider_id, name, slug, image, description, is_active, is_hidden
      FROM cms_categories WHERE ${where} ${active} ORDER BY name ASC`,
     params
   );
@@ -124,6 +126,7 @@ export async function getCategories(
     provider_id: row.provider_id,
     name: row.name,
     slug: row.slug,
+    image: row.image ?? "",
     description: row.description,
     is_active: row.is_active,
     is_hidden: row.is_hidden == null ? 0 : Number(row.is_hidden),
@@ -378,6 +381,7 @@ export async function getProducts(
     sku: row.sku,
     description: row.description,
     price: row.price,
+    compare_price: row.compare_price == null ? null : Number(row.compare_price),
     image: row.image,
     category: row.category,
     brand: row.brand,
@@ -427,6 +431,7 @@ export async function getProductBySlug(
     sku: row.sku,
     description: row.description,
     price: row.price,
+    compare_price: row.compare_price == null ? null : Number(row.compare_price),
     image: row.image,
     category: row.category,
     brand: row.brand,
@@ -502,6 +507,7 @@ function mapProduct(row: RowDataPacket): ProductData {
     sku: row.sku,
     description: row.description,
     price: row.price,
+    compare_price: row.compare_price == null ? null : Number(row.compare_price),
     image: row.image,
     category: row.category,
     brand: row.brand,
@@ -542,6 +548,37 @@ export async function getRecentProducts(
   const [where, params] = providerWhere(providerId);
   const [rows] = await db.query<RowDataPacket[]>(
     `SELECT * FROM cms_products WHERE ${where} ORDER BY id DESC LIMIT ?`,
+    [...params, limit]
+  );
+  return rows.map(mapProduct);
+}
+
+export async function getDiscountedProducts(
+  providerId: number | null,
+  limit = 10
+): Promise<ProductData[]> {
+  const [where, params] = providerWhere(providerId);
+  const [rows] = await db.query<RowDataPacket[]>(
+    `SELECT * FROM cms_products
+     WHERE ${where} AND is_active = 1 AND ${PRODUCT_VISIBLE_SQL}
+       AND compare_price IS NOT NULL AND compare_price > price
+     ORDER BY (compare_price - price) DESC, id DESC
+     LIMIT ?`,
+    [...params, limit]
+  );
+  return rows.map(mapProduct);
+}
+
+export async function getLatestProducts(
+  providerId: number | null,
+  limit = 10
+): Promise<ProductData[]> {
+  const [where, params] = providerWhere(providerId);
+  const [rows] = await db.query<RowDataPacket[]>(
+    `SELECT * FROM cms_products
+     WHERE ${where} AND is_active = 1 AND ${PRODUCT_VISIBLE_SQL}
+     ORDER BY id DESC
+     LIMIT ?`,
     [...params, limit]
   );
   return rows.map(mapProduct);
@@ -656,6 +693,7 @@ export async function getProductsPaginated(
     sku: row.sku,
     description: row.description,
     price: row.price,
+    compare_price: row.compare_price == null ? null : Number(row.compare_price),
     image: row.image,
     category: row.category,
     brand: row.brand,
@@ -702,16 +740,23 @@ export interface CategorySummary {
 
 export async function getTopCategories(
   providerId: number | null,
-  limit = 8
+  limit = 12
 ): Promise<CategorySummary[]> {
   const [where, params] = providerWhere(providerId);
+  const whereP = where.replace(/provider_id/g, "p.provider_id");
   const [rows] = await db.query<RowDataPacket[]>(
-    `SELECT category, COUNT(*) AS count,
-            MAX(CASE WHEN image <> '' THEN image END) AS image
-     FROM cms_products
-     WHERE ${where} AND is_active = 1 AND category <> '' AND ${PRODUCT_VISIBLE_SQL}
-     GROUP BY category
-     ORDER BY count DESC, category ASC
+    `SELECT p.category, COUNT(*) AS count,
+            COALESCE(
+              NULLIF(MAX(c.image), ''),
+              MAX(CASE WHEN p.image <> '' THEN p.image END),
+              ''
+            ) AS image
+     FROM cms_products p
+     LEFT JOIN cms_categories c
+       ON c.name = p.category AND c.provider_id <=> p.provider_id
+     WHERE ${whereP} AND p.is_active = 1 AND p.category <> '' AND p.is_hidden = 0
+     GROUP BY p.category
+     ORDER BY count DESC, p.category ASC
      LIMIT ?`,
     [...params, limit]
   );

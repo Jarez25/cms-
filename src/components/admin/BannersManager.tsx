@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import ImagePicker from "./ImagePicker";
 import { notify, confirmAction } from "./feedback";
 
@@ -486,8 +487,32 @@ export default function BannersManager() {
           </div>
         </form>
       ) : (
-        <div className="space-y-3">
-          {banners.map((b) => (
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-indigo-100 bg-gradient-to-r from-blue-50/70 via-indigo-50/70 to-purple-50/70 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-xs text-xl border border-indigo-100">
+                📣
+              </span>
+              <div>
+                <p className="text-sm font-bold text-gray-900">
+                  ¿Buscas editar el Banner CTA &ldquo;¿Buscas algo más?&rdquo; de la portada?
+                </p>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Personaliza el título, subtítulo, texto del botón, enlace de destino o desactívalo desde Ajustes.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/admin/settings"
+              className="shrink-0 inline-flex items-center gap-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl transition shadow-xs"
+            >
+              <span>Configurar Banner CTA</span>
+              <span>&rarr;</span>
+            </Link>
+          </div>
+
+          <div className="space-y-3">
+            {banners.map((b) => (
             <div
               key={b.id}
               className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center gap-4"
@@ -536,6 +561,7 @@ export default function BannersManager() {
               </button>
             </div>
           ))}
+          </div>
         </div>
       )}
     </div>

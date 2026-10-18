@@ -1,0 +1,1 @@
+ALTER TABLE cms_categories ADD COLUMN image VARCHAR(500) NOT NULL DEFAULT '' AFTER slug;

@@ -1,0 +1,1 @@
+ALTER TABLE cms_products ADD COLUMN compare_price DECIMAL(10, 2) NULL DEFAULT NULL AFTER price;

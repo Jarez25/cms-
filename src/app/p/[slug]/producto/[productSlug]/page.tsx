@@ -23,9 +23,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await getProductBySlug(productSlug, provider.id);
   if (!product) return {};
   const header = await getHeader(provider.id);
+
+  const siteName = header?.site_name || provider.name;
+  const title = `${product.name} | ${siteName}`;
+  const description =
+    product.description?.slice(0, 160) ||
+    `Compra ${product.name} en ${siteName}.`;
+
   return {
-    title: `${product.name} - ${header?.site_name || provider.name}`,
+    title,
+    description,
     ...(header?.favicon ? { icons: { icon: header.favicon } } : {}),
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      images: product.image ? [{ url: product.image, alt: product.name }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: product.image ? [product.image] : [],
+    },
   };
 }
 

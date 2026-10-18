@@ -64,9 +64,16 @@ export default function FeaturedProducts({ products, currency, productBase, seeA
                   {p.name}
                 </h3>
                 <div className="flex items-center justify-between mt-3">
-                  <span className="font-extrabold text-gray-900">
-                    {formatPrice(p.price, currency)}
-                  </span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span suppressHydrationWarning className={`font-extrabold ${p.compare_price && p.compare_price > p.price ? "text-red-600" : "text-gray-900"}`}>
+                      {formatPrice(p.price, currency)}
+                    </span>
+                    {p.compare_price && p.compare_price > p.price && (
+                      <span suppressHydrationWarning className="text-xs text-gray-400 line-through">
+                        {formatPrice(p.compare_price, currency)}
+                      </span>
+                    )}
+                  </div>
                   <span className="w-7 h-7 rounded-full bg-gray-900 text-white flex items-center justify-center group-hover:bg-primary transition-colors text-sm">
                     →
                   </span>

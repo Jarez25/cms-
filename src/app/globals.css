@@ -14,6 +14,8 @@
   --color-primary-light: var(--primary-light);
   --color-primary-dark: var(--primary-dark);
   --color-primary-soft: var(--primary-soft);
+  --color-season-accent: var(--season-accent);
+  --color-season-gold: var(--season-gold);
 }
 
 :root {
@@ -21,6 +23,35 @@
   --primary-light: #6366f1;
   --primary-dark: #4338ca;
   --primary-soft: #eef2ff;
+  --season-accent: #06b6d4;
+  --season-gold: #f59e0b;
+}
+
+[data-theme="halloween"] {
+  --primary: #ea580c;
+  --primary-light: #f97316;
+  --primary-dark: #9a3412;
+  --primary-soft: #fff7ed;
+  --season-accent: #9333ea;
+  --season-gold: #f59e0b;
+}
+
+[data-theme="christmas"] {
+  --primary: #dc2626;
+  --primary-light: #ef4444;
+  --primary-dark: #991b1b;
+  --primary-soft: #fef2f2;
+  --season-accent: #15803d;
+  --season-gold: #eab308;
+}
+
+[data-theme="valentine"] {
+  --primary: #e11d48;
+  --primary-light: #f43f5e;
+  --primary-dark: #9f1239;
+  --primary-soft: #fff1f2;
+  --season-accent: #ec4899;
+  --season-gold: #f59e0b;
 }
 
 html {

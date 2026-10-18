@@ -7,10 +7,12 @@ import {
 import { cookies } from "next/headers";
 
 const COOKIE_NAME = "cms_admin_token";
+const TOKEN_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 días
 
 export interface Session {
   role: "superadmin" | "provider";
   providerId: number | null;
+  expiresAt?: number;
 }
 
 function getSecret(): string {
@@ -31,7 +33,8 @@ export function verifyPassword(password: string, stored: string): boolean {
 }
 
 export function makeToken(userId: number, role: Session["role"]): string {
-  const payload = `${userId}:${role}`;
+  const expiresAt = Date.now() + TOKEN_TTL_MS;
+  const payload = `${userId}:${role}:${expiresAt}`;
   const sig = createHmac("sha256", getSecret()).update(payload).digest("hex");
   return `${payload}:${sig}`;
 }
@@ -40,12 +43,31 @@ export async function getSession(): Promise<Session | null> {
   const store = await cookies();
   const raw = store.get(COOKIE_NAME)?.value;
   if (!raw) return null;
-  const [userId, role, sig] = raw.split(":");
-  if (!userId || !role || !sig) return null;
-  const expected = createHmac("sha256", getSecret()).update(`${userId}:${role}`).digest("hex");
-  if (sig !== expected) return null;
-  if (role === "superadmin") return { role: "superadmin", providerId: null };
-  if (role === "provider") return { role: "provider", providerId: Number(userId) };
+
+  const parts = raw.split(":");
+  // Token moderno con expiración: userId:role:expiresAt:sig
+  if (parts.length === 4) {
+    const [userId, role, expStr, sig] = parts;
+    const expiresAt = Number(expStr);
+    if (!expiresAt || Date.now() > expiresAt) return null; // Token expirado
+
+    const expected = createHmac("sha256", getSecret()).update(`${userId}:${role}:${expStr}`).digest("hex");
+    if (sig !== expected) return null;
+
+    if (role === "superadmin") return { role: "superadmin", providerId: null, expiresAt };
+    if (role === "provider") return { role: "provider", providerId: Number(userId), expiresAt };
+    return null;
+  }
+
+  // Retrocompatibilidad con tokens anteriores sin exp: userId:role:sig
+  if (parts.length === 3) {
+    const [userId, role, sig] = parts;
+    const expected = createHmac("sha256", getSecret()).update(`${userId}:${role}`).digest("hex");
+    if (sig !== expected) return null;
+    if (role === "superadmin") return { role: "superadmin", providerId: null };
+    if (role === "provider") return { role: "provider", providerId: Number(userId) };
+  }
+
   return null;
 }
 
